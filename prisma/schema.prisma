@@ -1,15 +1,47 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model orders {
+  order_id      String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  customer_name String
+  product_id    String   @db.Uuid
+  order_date    DateTime @default(now()) @db.Timestamp(6)
+  products      products @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_product")
+}
+
+model products {
+  id      String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name    String
+  price   Int?
+  country String?
+  orders  orders[]
+}
+
+model todos {
+  id          String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id     String? @db.Uuid
+  name        String?
+  description String?
+  users       users?  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model users {
+  id        String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name      String
+  password  String? @db.VarChar(200)
+  email     String? @db.VarChar(255)
+  image_url String? @db.VarChar(200)
+  todos     todos[]
+}
+
+model prisma {
+  id          String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name        String?
+  description String?
+ }
